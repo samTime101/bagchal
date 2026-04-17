@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Turn(Enum):
+class Player(Enum):
     GOAT = 1
     TIGER = -1
 
