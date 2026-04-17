@@ -15,6 +15,12 @@ class Engine:
     def is_empty(self, pos):
         return self.board[pos] == 0
 
+    def switch_turn(self):
+        self.turn = Turn.TIGER if self.turn == Turn.GOAT else Turn.GOAT
+    
+    def get_piece(self):
+        return self.turn.value
+
     def valid_normal_move(self, current, target):
         return target in N[current] and self.is_empty(target)
 
