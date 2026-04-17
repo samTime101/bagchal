@@ -29,8 +29,49 @@ class Engine:
         if (current, target) not in J:
             return False
         midpoint = J[(current, target)]
-        return self.board[midpoint] == 1 and self.is_empty(target)
+        return self.board[midpoint] == 1 and self.is_empty(target) and self.board[current] == -1
     
+    def place_goat(self, pos):
+        if self.turn != Turn.GOAT or self.phase != Phase.PLACEMENT or not self.is_empty(pos):
+            return False
+        self.board[pos] = 1
+        self.goats_placed += 1
+        if self.goats_placed == 20:
+            self.phase = Phase.MOVEMENT
+        self.switch_turn()
+        return True
+
+    def move_goat(self,current,target):
+        if not self.valid_normal_move(current, target) or self.phase != Phase.MOVEMENT:
+            return False
+        self.board[current] = 0
+        self.board[target] = 1
+        return True
+    
+    def tiger_normal_move(self,current,target):
+        self.board[current] = 0
+        self.board[target] = -1
+        self.tigers.remove(current)
+        self.tigers.add(target)
+        return True
+
+    def tiger_jump_move(self,current,target):
+        mid = J[(current, target)]
+        self.board[current] = 0
+        self.board[target] = -1
+        self.board[mid] = 0
+        self.tigers.remove(current)
+        self.tigers.add(target)
+        self.goats_captured += 1
+        return True
+
+    def move_tiger(self,current,target):
+        if self.valid_normal_move(current,target):
+            return self.tiger_normal_move(current,target)
+        elif self.valid_jump_move(current, target):
+            return self.tiger_jump_move(current, target)
+        return False
+
     def are_tigers_trapped(self):
         for t in self.tigers:
             for neighbor in N[t]:
