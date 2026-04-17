@@ -45,7 +45,7 @@ class Engine:
         midpoint = J[(current, target)]
         return self.board[midpoint] == Player.GOAT.value and self.is_empty(target)
     
-    def place_goat(self, pos, role=None, sid=None):
+    def place_goat(self, pos, sid=None, role=None,):
         if (self.turn != Player.GOAT or self.phase != Phase.PLACEMENT or not self.is_empty(pos) or self.winner or (role is not None and role != Player.GOAT.value)):
             return False
         self.board[pos] = Player.GOAT.value
@@ -56,7 +56,7 @@ class Engine:
         self._end_turn()
         return True
 
-    def move_goat(self,current,target,sid=None, role=None):
+    def move_goat(self,current,target,sid=None,role=None):
         if (self.turn != Player.GOAT or self.phase != Phase.MOVEMENT or self.winner or not self.valid_normal_move(current, target) or (role is not None and role != Player.GOAT.value)):
             return False
         self.board[current] = 0
