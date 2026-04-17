@@ -1,4 +1,4 @@
-from src.engine import Engine
+from engine.engine import Engine
 
 engine = Engine()
 print(engine.board)

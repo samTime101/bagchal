@@ -1,2 +1,3 @@
 temps/
 __pycache__/
+.venv/
