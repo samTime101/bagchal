@@ -80,6 +80,9 @@ class Room:
         self.users.pop(sid, None)
         self._assign_roles()
 
+    def reset(self):
+        self.engine = Engine()
+
     @property
     def details(self):
         return {

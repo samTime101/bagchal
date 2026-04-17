@@ -65,5 +65,13 @@ async def get_possible_moves(sid, data):
     moves = room.engine.get_possible_moves(pos)
     await sio.emit("possible_moves", {"pos": pos, "moves": moves}, to=sid)
 
+@sio.event
+async def reset_game(sid):
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    room.reset()
+    await sio.emit("room_details", room.details, to=room.room_id)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000) 
