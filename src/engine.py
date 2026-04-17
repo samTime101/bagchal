@@ -3,7 +3,7 @@ from .utils.enums import *
 
 class Engine:
     def __init__(self):
-        self.board = {i: 0 for i in range(25)}
+        self.board = [0] * 25
         for i in [0, 4, 20, 24]:
             self.board[i] = -1
         self.turn = Turn.GOAT
