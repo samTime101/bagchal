@@ -43,3 +43,9 @@ class Engine:
                     return False
         # Tiger abhi zinda he lolllll
         return True
+    
+    def check_winner(self):
+        if self.goats_captured >= 5:
+            self.winner = Turn.TIGER
+        elif self.are_tigers_trapped():
+            self.winner = Turn.GOAT
