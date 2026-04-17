@@ -2,20 +2,59 @@ from dataclasses import dataclass
 from typing import Dict
 from src.engine.engine import Engine
 from src.engine.utils.enums import *
-
-# TODO: room lai dynamic banaune, like auto assign 2 users per room,
-#  naya banaune if prevuous is full ...
+import uuid
 
 @dataclass
 class User:
     sid: str
     role: int = None
 
+class RoomManager:
+    def __init__(self):
+        self.rooms: Dict[str, Room] = {} # room_id: Room
+        self.user_room_map: Dict[str, str] = {} # user_id: room_id
+
+    def create_room(self) -> Room:
+        room = Room(room_id=str(uuid.uuid4()))
+        self.rooms[room.room_id] = room
+        return room
+
+    def find_or_create_room(self) -> Room:
+        for room in self.rooms.values():
+            if len(room.users) < room.max_users:
+                return room
+        return self.create_room()
+
+    def add_user(self, sid: str) -> Room:
+        room = self.find_or_create_room()
+        if room.add_user(sid):
+            self.user_room_map[sid] = room.room_id
+        return room
+
+    def remove_user(self, sid: str):
+        room_id = self.user_room_map.get(sid)
+        if not room_id:
+            return None
+        room = self.rooms.get(room_id)
+        if not room:
+            return None
+        room.remove_user(sid)
+        self.user_room_map.pop(sid, None)
+        if len(room.users) == 0:
+            self.rooms.pop(room_id)
+        return room
+
+    def get_room_by_sid(self, sid: str) -> Room | None:
+        room_id = self.user_room_map.get(sid)
+        if not room_id:
+            return None
+        return self.rooms.get(room_id)
+
 class Room:
     def __init__(self, room_id: str):
         self.room_id = room_id
         self.users: Dict[str, User] = {}
-        self.max_users = 2 #lol aaile use ma xaina, just a model property
+        self.max_users = 2
         self.engine = Engine()
 
     def _assign_roles(self):
@@ -28,8 +67,11 @@ class Room:
             self.users[sids[1]].role = Player.TIGER.value #-1
 
     def add_user(self, sid: str):
+        if len(self.users) >= self.max_users:
+            return False
         self.users[sid] = User(sid=sid)
         self._assign_roles()
+        return True
 
     def get_user_by_sid(self, sid: str) -> User | None:
         return self.users.get(sid)
