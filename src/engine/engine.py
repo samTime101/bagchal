@@ -43,7 +43,7 @@ class Engine:
         return True
 
     def move_goat(self,current,target):
-        if not self.valid_normal_move(current, target) or self.phase != Phase.MOVEMENT or self.winner is not None:
+        if not self.valid_normal_move(current, target) or self.phase != Phase.MOVEMENT or self.winner is not None or self.turn != Turn.GOAT:
             return False
         self.board[current] = 0
         self.board[target] = 1
