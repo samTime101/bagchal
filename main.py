@@ -1,2 +1,4 @@
-from utils.states import *
-print(N)
+from src.engine import Engine
+
+engine = Engine()
+print(engine.board)
