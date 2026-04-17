@@ -10,6 +10,7 @@ Number of Tigers: 4
 Tiger Denotion: -1 
 Goat Denotion: 1
 Empty position: 0
+
 ---
 ## Board Initialization
 Possible grid: 25
@@ -31,6 +32,7 @@ Board[0] = Board[4] = Board[20] = Board[24] = -1
 | 10     | 11  | 12  | 13  | 14     |
 | 15     | 16  | 17  | 18  | 19     |
 | -1(20) | 21  | 22  | 23  | -1(24) |
+
 So the actual values are -1 , the 0,20,4,24 are their index i.e their positions
 
 ---
