@@ -4,7 +4,8 @@ from .utils.enums import *
 class Engine:
     def __init__(self):
         self.board = [0] * 25
-        for i in [0, 4, 20, 24]:
+        self.tigers = {0, 4, 20, 24}
+        for i in self.tigers:
             self.board[i] = -1
         self.turn = Turn.GOAT
         self.phase = Phase.PLACEMENT
@@ -29,3 +30,16 @@ class Engine:
             return False
         midpoint = J[(current, target)]
         return self.board[midpoint] == 1 and self.is_empty(target)
+    
+    def are_tigers_trapped(self):
+        for t in self.tigers:
+            for neighbor in N[t]:
+                # if kunai position khali xa vane from tigers position, then tiger abhi zinda he lol
+                if self.is_empty(neighbor):
+                    return False
+            # jump garna pai raxa vane tiger aajhai zinda xa
+            for (start, end), mid in J.items():
+                if start == t and self.board[mid] == 1 and self.is_empty(end):
+                    return False
+        # Tiger abhi zinda he lolllll
+        return True
