@@ -69,7 +69,7 @@ class Engine:
         return True
 
     def move_tiger(self,current,target):
-        if self.turn != Turn.TIGER or self.phase != Phase.MOVEMENT or self.winner is not None:
+        if self.turn != Turn.TIGER or self.winner is not None:
             return False
         moved = False
         if self.valid_normal_move(current,target):
@@ -99,3 +99,13 @@ class Engine:
             self.winner = Turn.TIGER
         elif self.are_tigers_trapped():
             self.winner = Turn.GOAT
+
+    def get_possible_moves(self, pos):
+        moves = []
+        for neighbor in N[pos]:
+            if self.is_empty(neighbor):
+                moves.append(neighbor)
+        for (start, end), mid in J.items():
+            if start == pos and self.board[mid] == 1 and self.is_empty(end):
+                moves.append(end)
+        return moves
