@@ -1,5 +1,12 @@
 @Author: Samip Regmi
 
+## Execution
+- from root , create a virtual environment and activate it
+- `pip install -r requirements.txt`
+- `python -m src.server.server.py` 
+
+---
+
 This is complete informal document, made for me, I will refactor on some other day
 ## Basic Information about players
 Number of goats: 20
