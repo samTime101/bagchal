@@ -28,11 +28,15 @@ class RoomManager:
     def __init__(self):
         self.rooms: Dict[str, Room] = {} # room_id: Room
         self.user_room_map: Dict[str, str] = {} # user_id: room_id
+        self.connected_users = {} # sid -> uid
 
     def create_room(self) -> Room:
         room = Room(room_id=str(uuid.uuid4()))
         self.rooms[room.room_id] = room
         return room
+
+    def get_total_online(self) -> int:
+        return len(set(uid for uid in self.connected_users.values() if uid))
 
     def find_or_create_room(self) -> Room:
         for room in self.rooms.values():

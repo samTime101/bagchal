@@ -23,6 +23,7 @@ def _parse_auth_data(auth: dict | None) -> tuple[uuid.UUID | None, str | None]:
 async def _handle_lobby_connection(sio, sid: str, room_manager: RoomManager):
     await sio.enter_room(sid, "lobby")
     await sio.emit("room_list", room_manager.room_list(), to=sid)
+    await sio.emit("stats", {"online": room_manager.get_total_online()}, to=sid)
 
 def _resolve_user_and_room(sio, sid: str, uid: uuid.UUID | None, room_id: str | None, room_manager: RoomManager) -> Room:
     room, user = room_manager.get_room_and_user_by_uid(uid) if uid else (None, None)    

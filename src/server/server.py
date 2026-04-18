@@ -11,6 +11,8 @@ room_manager = RoomManager()
 @sio.event
 async def connect(sid, environ, auth):
     uuid, room_id = _parse_auth_data(auth)
+    room_manager.connected_users[sid] = uuid
+    await sio.emit("stats", {"online": room_manager.get_total_online()}, to="lobby")
     if room_id == "lobby":
        return await _handle_lobby_connection(sio, sid, room_manager)
     room = _resolve_user_and_room(sio, sid, uuid, room_id, room_manager)
@@ -21,6 +23,8 @@ async def connect(sid, environ, auth):
 
 @sio.event
 async def disconnect(sid):
+    room_manager.connected_users.pop(sid, None)
+    await sio.emit("stats", {"online": room_manager.get_total_online()}, to="lobby")
     room = room_manager.remove_user(sid)
     if room:
         await sio.emit("room_details", room.details, to=room.room_id)
