@@ -60,7 +60,7 @@ async def move_goat(sid, data):
         return
     current = data.get("current")
     target = data.get("target")
-    user = room.get_user_by_sid(sid)
+    user = room.users.get(sid)
     if not user or user.role != Player.GOAT.value:
         return
     if room.engine.move_goat(current, target, sid, user.role):
