@@ -25,8 +25,13 @@ class RoomManager:
                 return room
         return self.create_room()
 
-    def add_user(self, sid: str) -> Room:
-        room = self.find_or_create_room()
+    def add_user(self, sid: str, room_id: str = None) -> Room:
+        if room_id and room_id in self.rooms:
+            room = self.rooms[room_id]
+            if len(room.users) >= room.max_users:
+                room = self.find_or_create_room()
+        else:
+            room = self.find_or_create_room()
         if room.add_user(sid):
             self.user_room_map[sid] = room.room_id
         return room

@@ -9,7 +9,8 @@ room_manager = RoomManager()
 
 @sio.event
 async def connect(sid, environ, auth):
-    room = room_manager.add_user(sid)
+    room_id = auth.get("room_id") if auth else None
+    room = room_manager.add_user(sid, room_id)
     await sio.enter_room(sid, room.room_id)
     await sio.emit("room_details", room.details, to=room.room_id)
 
