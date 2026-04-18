@@ -156,7 +156,7 @@ class Room:
             self.uid_sid_map.pop(user.uid, None)
 
     def restart(self, sid: str = None) -> bool:
-        user = self.get_user_by_sid(sid)
+        user = self.users.get(sid)
         if not user or user.role is None or self.engine.winner is None:
             return False
         self.engine = Engine()

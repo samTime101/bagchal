@@ -96,7 +96,9 @@ async def restart_game(sid):
     room = room_manager.get_room_by_sid(sid)
     if not room:
         return
-    user = room.get_user_by_sid(sid)
+    user = room.users.get(sid)
+    if not user:
+        return
     if room.restart(user.sid):
         await sio.emit("room_details", room.details, to=room.room_id)
 
