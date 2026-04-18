@@ -154,6 +154,8 @@ class Room:
         user = self.users.pop(sid, None)
         if user and user.uid:
             self.uid_sid_map.pop(user.uid, None)
+        if user and user.role is not None:
+            self.chat_history.clear()
 
     def restart(self, sid: str = None) -> bool:
         user = self.users.get(sid)
