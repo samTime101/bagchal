@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Dict, Optional
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional
 from src.engine.engine import Engine
 from src.engine.utils.enums import *
 import uuid
@@ -15,7 +15,14 @@ import uuid
 @dataclass
 class User:
     sid: str
+    uid: uuid.UUID = field(default_factory=uuid.uuid4)
     role: int = None
+
+@dataclass
+class ChatMessage:
+    message: str
+    time: float
+    sender: Optional[User] = None
 
 class RoomManager:
     def __init__(self):
@@ -53,6 +60,8 @@ class RoomManager:
         room = self.rooms.get(room_id)
         if not room:
             return None
+        if sid not in room.users:
+            return None
         room.remove_user(sid)
         self.user_room_map.pop(sid, None)
         if len(room.users) == 0:
@@ -65,6 +74,12 @@ class RoomManager:
             return None
         return self.rooms.get(room_id)
     
+    def get_room_and_user_by_uid(self, uid: uuid.UUID):
+        for room in self.rooms.values():
+            sid = room.uid_sid_map.get(uid)
+            if sid:
+                return room, room.users.get(sid)
+        return None, None
 
     def room_list(self):
         return {
@@ -85,9 +100,11 @@ class RoomManager:
 class Room:
     def __init__(self, room_id: str):
         self.room_id = room_id
-        self.users: Dict[str, User] = {}
+        self.users: Dict[str, User] = {} # sid: User
+        self.uid_sid_map: Dict[uuid.UUID, str] = {} # uid: sid
         self.max_players = 2
         self.engine = Engine()
+        self.chat_history: List[ChatMessage] = []
 
     @property
     def players(self):
@@ -109,19 +126,30 @@ class Room:
             return Player.TIGER.value
         return None
 
-    def add_user(self, sid: str):
+    def add_user(self, sid: str, uuid: uuid.UUID = None) -> bool:
         if sid in self.users:
             return False
         role = self.__get_available_role()
-        self.users[sid] = User(sid=sid, role=role)
+        self.users[sid] = User(sid=sid, role=role, uid=uuid)
+        if uuid:
+            self.uid_sid_map[uuid] = sid
         return True
+    
+    def replace_sid(self, old_sid: str, new_sid: str):
+        user = self.users.pop(old_sid, None)
+        if not user:
+            return
 
-    def get_user_by_sid(self, sid: str) -> User | None:
-        return self.users.get(sid)
+        user.sid = new_sid
+        self.users[new_sid] = user
+
+        if user.uid:
+            self.uid_sid_map[user.uid] = new_sid
     
     def remove_user(self, sid: str):
-        self.users.pop(sid, None)
-
+        user = self.users.pop(sid, None)
+        if user and user.uid:
+            self.uid_sid_map.pop(user.uid, None)
 
     def restart(self, sid: str = None) -> bool:
         user = self.get_user_by_sid(sid)
@@ -139,12 +167,14 @@ class Room:
             "max_players": self.max_players,
             "spectators": [
                 {
+                    "uid": str(user.uid),
                     "sid": user.sid,
                 }
                 for user in self.spectators.values()
             ],
             "players": [
                 {
+                    "uid": str(user.uid),
                     "sid": user.sid,
                     "role": user.role,
                 }
@@ -152,3 +182,18 @@ class Room:
             ],
             "engine": self.engine.get_state(),
         }
+    
+    @property
+    def chat(self):
+        return [
+            {
+                "sender": {
+                    "uid": str(msg.sender.uid) if msg.sender else None,
+                    "sid": msg.sender.sid if msg.sender else None,
+                    "role": msg.sender.role if msg.sender else None,
+                },
+                "message": msg.message,
+                "time": msg.time,
+            }
+            for msg in self.chat_history
+        ]

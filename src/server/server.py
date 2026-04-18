@@ -1,6 +1,8 @@
 import socketio
 from src.server.models import *
 import uvicorn
+import time
+from src.server.helpers.helper import _parse_auth_data, _handle_lobby_connection, _resolve_user_and_room, emit_to_players
 
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
 app = socketio.ASGIApp(sio)
@@ -8,17 +10,14 @@ room_manager = RoomManager()
 
 @sio.event
 async def connect(sid, environ, auth):
-    room_id = auth.get("room_id") if auth else None
-
+    uuid, room_id = _parse_auth_data(auth)
     if room_id == "lobby":
-        await sio.enter_room(sid, "lobby")
-        await sio.emit("room_list", room_manager.room_list(), to=sid)
-        return
-
-    room = room_manager.add_user(sid, room_id)
+       return await _handle_lobby_connection(sio, sid, room_manager)
+    room = _resolve_user_and_room(sio, sid, uuid, room_id, room_manager)
     await sio.enter_room(sid, room.room_id)
     await sio.emit("room_details", room.details, to=room.room_id)
     await sio.emit("room_list", room_manager.room_list(), to="lobby")
+    await emit_to_players(sio, room, "chat")
 
 @sio.event
 async def disconnect(sid):
@@ -34,7 +33,7 @@ async def place_goat(sid, data):
     if not room:
         return
     target = data.get("target")
-    user = room.get_user_by_sid(sid)
+    user = room.users.get(sid)
     if not user or user.role != Player.GOAT.value:
         return
     print("ROLE", user.role)
@@ -64,7 +63,7 @@ async def move_tiger(sid, data):
     print(room.details)
     current = data.get("current")
     target = data.get("target")
-    user = room.get_user_by_sid(sid)
+    user = room.users.get(sid)
     if not user or user.role != Player.TIGER.value:
         return
     if room.engine.move_tiger(current, target, sid, user.role):
@@ -99,6 +98,18 @@ async def room_detail(sid):
     if not room:
         return
     await sio.emit("room_details", room.details, to=sid)
+
+@sio.event
+async def send_message(sid, data):
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    message = data.get("message")
+    user = room.users.get(sid)
+    if not user:
+        return
+    room.chat_history.append(ChatMessage(message=message, time=time.time(), sender=user))
+    await emit_to_players(sio, room, "chat")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000) 

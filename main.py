@@ -28,3 +28,4 @@ print(len(room.users))
 
 room = room_manager.rooms.get(room.room_id)
 print(room.details)
+print(room.chat)
