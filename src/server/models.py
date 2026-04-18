@@ -123,13 +123,12 @@ class Room:
         self.users.pop(sid, None)
 
 
-    # SHITTY CODE AND LOGIC
-    # def reset(self, sid: str = None) -> bool:
-    #     user = self.get_user_by_sid(sid)
-    #     if not user or user.role is None:
-    #         return False
-    #     self.engine = Engine()
-    #     return True
+    def restart(self, sid: str = None) -> bool:
+        user = self.get_user_by_sid(sid)
+        if not user or user.role is None or self.engine.winner is None:
+            return False
+        self.engine = Engine()
+        return True
 
 
     @property

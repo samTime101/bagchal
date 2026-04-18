@@ -80,14 +80,14 @@ async def get_possible_moves(sid, data):
     await sio.emit("possible_moves", {"pos": pos, "moves": moves}, to=sid)
 
 # SHITTY CODE
-# @sio.event
-# async def reset_game(sid):
-#     room = room_manager.get_room_by_sid(sid)
-#     if not room:
-#         return
-#     user = room.get_user_by_sid(sid)
-#     if room.reset(user.sid):
-#         await sio.emit("room_details", room.details, to=room.room_id)
+@sio.event
+async def restart_game(sid):
+    room = room_manager.get_room_by_sid(sid)
+    if not room:
+        return
+    user = room.get_user_by_sid(sid)
+    if room.restart(user.sid):
+        await sio.emit("room_details", room.details, to=room.room_id)
 
 @sio.event
 async def room_list(sid):
