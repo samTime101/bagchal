@@ -1,10 +1,18 @@
+import  os
 import socketio
 from src.server.models import *
 import uvicorn
 import time
 from src.server.helpers.helper import _parse_auth_data, _handle_lobby_connection, _resolve_user_and_room, emit_to_players
+from dotenv import load_dotenv
 
-sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi")
+load_dotenv()
+
+MODE = os.getenv("MODE", "development")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS.split(",") if o.strip()]
+
+sio = socketio.AsyncServer(cors_allowed_origins=ALLOWED_ORIGINS if MODE == "production" else "*", async_mode="asgi")
 app = socketio.ASGIApp(sio)
 room_manager = RoomManager()
 
